@@ -27,7 +27,27 @@ VALUES
 ('CX-5', 'Mazda', 2023, 'White', 48.00, 'Rented'),
 ('Altima', 'Nissan', 2022, 'Blue', 35.00, 'Available');
 
+
+
+-- Always check what you're about to delete
+SELECT * FROM cars.car WHERE car_id = 10;
+-- Then delete
+DELETE FROM cars.car WHERE car_id = 10;
+
 SELECT * FROM cars.car;
+
+
+-- Delete car with ID 10 and all its dependencies
+BEGIN TRANSACTION;
+
+DELETE FROM cars.Insurance WHERE car_id = 10;
+DELETE FROM cars.maintenance WHERE car_id = 10;
+DELETE FROM cars.Location WHERE car_id = 10;
+DELETE FROM cars.Booking WHERE car_id = 10;
+DELETE FROM cars.Reservation WHERE car_id = 10;
+DELETE FROM cars.car WHERE car_id = 10;
+
+COMMIT TRANSACTION;
 
 CREATE TABLE cars.Insurance (
     insurance_id INT IDENTITY(1,1) PRIMARY KEY,
@@ -57,7 +77,7 @@ SELECT * FROM cars.Insurance;
 DROP TABLE cars.Insurance;
 
 
-CREATE TABLE cars.maintainance(
+CREATE TABLE cars.maintenance(
 maintainace_id INT IDENTITY(1,1) PRIMARY KEY,
 car_id INT NOT NULL,
 maintainance_date DATE NOT NULL,
@@ -66,9 +86,15 @@ cost MONEY NOT NULL
 
 );
 
+-- Drop all possible variations of the table
+DROP TABLE IF EXISTS cars.maintenance;
+DROP TABLE IF EXISTS maintenance;
+DROP TABLE IF EXISTS cars.maintainance;
+DROP TABLE IF EXISTS dbo.maintenance;
+
 --rename table name
 
-EXEC sp_rename 'cars.maintainance', 'maintenance';
+EXEC sp_rename 'maintenance', 'cars.maintenance', 'OBJECT';
 
 INSERT INTO cars.maintenance (car_id, maintainance_date, description, cost)
 VALUES
@@ -85,6 +111,16 @@ VALUES
 
 SELECT * FROM cars.maintenance;
 
+-- Delete maintenance record by ID
+DELETE FROM cars.maintenance WHERE maintainace_id = 3;
+
+-- Delete maintenance records with cost less than $100
+DELETE FROM cars.maintenance WHERE cost < 100.00;
+
+-- Delete maintenance records before a certain date
+DELETE FROM cars.maintenance WHERE maintainance_date < '2024-03-01';
+
+SELECT * FROM cars.maintenance;
 
 CREATE TABLE cars.Customer (
     customer_id INT  PRIMARY KEY,
@@ -102,7 +138,26 @@ INSERT INTO cars.Customer (customer_id, firstName, lastName, email, phone_number
 (4, 'Bob', 'Johnson', 'bob.j@email.com', '0745678901', 'Nakuru'),
 (5, 'Charlie', 'Lee', 'charlie.lee@email.com', '0756789012', 'Eldoret');
 
-SELECT * FROM  cars.Customer;
+-- Update customer email
+UPDATE cars.Customer 
+SET email = 'john.doe.new@email.com' 
+WHERE customer_id = 1;
+
+-- Update customer address and phone
+UPDATE cars.Customer 
+SET address = 'Westlands', phone_number = '0711222333' 
+WHERE customer_id = 2;
+
+-- Update last name
+UPDATE cars.Customer 
+SET lastName = 'Williams' 
+WHERE firstName = 'Jane' AND lastName = 'Smith';
+
+SELECT * FROM  cars.Customer 
+
+WHERE  customer_id = 1
+
+;
 DROP TABLE cars.Customer;
 
 CREATE TABLE cars.Location (
@@ -179,3 +234,5 @@ INSERT INTO cars.Payment (payment_id, booking_id, payment_date, amount, payment_
 (5, 5, '2024-05-17', 168.00, 'Cash');
 
 SELECT * FROM cars.Payment;
+
+
